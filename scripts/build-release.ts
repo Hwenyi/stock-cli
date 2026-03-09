@@ -25,7 +25,7 @@ const releaseTargets: ReleaseTarget[] = [
   },
   {
     target: 'bun-windows-x64-baseline',
-    artifactSuffix: 'windows-x64',
+    artifactSuffix: 'windows-amd64',
     extension: '.exe',
     notes: 'Built with the baseline target for broader x64 CPU compatibility on Windows.',
   },
@@ -49,7 +49,7 @@ const manifest: {
 }
 
 for (const releaseTarget of releaseTargets) {
-  const fileName = `stock-cli-${packageJson.version}-${releaseTarget.artifactSuffix}${releaseTarget.extension}`
+  const fileName = `stock-cli_v${packageJson.version}_${releaseTarget.artifactSuffix}${releaseTarget.extension}`
   const binaryPath = join(releaseDir, fileName)
 
   const build = Bun.spawnSync([
@@ -89,4 +89,4 @@ for (const releaseTarget of releaseTargets) {
   console.log(`Built release asset: ${fileName}`)
 }
 
-await writeFile(join(releaseDir, 'release-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
+await writeFile(join(releaseDir, `stock-cli_v${packageJson.version}_manifest.json`), `${JSON.stringify(manifest, null, 2)}\n`)

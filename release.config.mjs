@@ -26,7 +26,7 @@ export default {
       '@semantic-release/github',
       {
         assets: [
-          { path: 'dist/releases/*', label: 'stock-cli release asset' },
+          { path: 'dist/releases/*' },
         ],
       },
     ],

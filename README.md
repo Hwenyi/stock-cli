@@ -70,10 +70,10 @@ bun run build:bun:windows-x64
 
 发布构建默认覆盖两个平台：
 
-- macOS Apple Silicon：`stock-cli-<version>-darwin-arm64`
-- Windows x64：`stock-cli-<version>-windows-x64.exe`
+- macOS Apple Silicon：`stock-cli_v<version>_darwin-arm64`
+- Windows x64：`stock-cli_v<version>_windows-amd64.exe`
 
-其中 Windows 版本内部使用 Bun 的 `bun-windows-x64-baseline` 目标，以兼顾更广泛的 x64 CPU 兼容性。
+其中 Windows 版本内部使用 Bun 的 `bun-windows-x64-baseline` 目标，以兼顾更广泛的 x64 CPU 兼容性；发布命名对外统一使用 `amd64` 表达。
 本地默认 Bun 打包产物固定命名为 `stock-cli`，不会附加 `-bun` 之类的后缀。
 
 ### 备选方案：tsdown 二进制

@@ -82,16 +82,16 @@ docs: update release instructions
 
 当前默认产物：
 
-- `stock-cli-<version>-darwin-arm64`
-- `stock-cli-<version>-darwin-arm64.sha256`
-- `stock-cli-<version>-windows-x64.exe`
-- `stock-cli-<version>-windows-x64.exe.sha256`
-- `release-manifest.json`
+- `stock-cli_v<version>_darwin-arm64`
+- `stock-cli_v<version>_darwin-arm64.sha256`
+- `stock-cli_v<version>_windows-amd64.exe`
+- `stock-cli_v<version>_windows-amd64.exe.sha256`
+- `stock-cli_v<version>_manifest.json`
 
 说明：
 
 - macOS 产物面向 Apple Silicon，也就是 M 系列芯片
-- Windows 产物当前使用 Bun 的 `bun-windows-x64-baseline` 目标生成，以兼顾更常见的 x64 机器兼容性
+- Windows 产物当前使用 Bun 的 `bun-windows-x64-baseline` 目标生成，以兼顾更常见的 x64 机器兼容性；对外发布命名使用 `windows-amd64`
 - 如果后续需要覆盖 Intel Mac 或 Linux，可继续在 `scripts/build-release.ts` 中追加目标
 - `tsdown` 仅作为开发者在本地拉源码后的备用编译链路，不参与 GitHub Actions 和自动发布
 
