@@ -1,6 +1,6 @@
 {
   "name": "stock-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "CLI for fetching HK and US stock quotes with stock-sdk.",
