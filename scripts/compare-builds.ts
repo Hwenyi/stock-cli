@@ -2,6 +2,8 @@ import { stat } from 'node:fs/promises'
 import { performance } from 'node:perf_hooks'
 import { spawn } from 'node:child_process'
 
+import { parse as parseYaml } from 'yaml'
+
 type BuildRoute = {
   name: 'bun-direct' | 'tsdown-bun'
   buildCommand: string[]
@@ -14,6 +16,8 @@ type CommandCase = {
   expectExitCode: number
   validate: (result: CommandResult) => void
 }
+
+type StructuredOutputFormat = 'yaml' | 'json'
 
 type CommandResult = {
   exitCode: number
@@ -62,7 +66,7 @@ const offlineCases: CommandCase[] = [
     args: ['help'],
     expectExitCode: 0,
     validate: ({ stdout }) => {
-      if (!stdout.includes('stock-cli') || !stdout.includes('Usage:')) {
+      if (!stdout.includes('stock-cli') || !stdout.includes('Usage:') || !stdout.includes('--yaml') || !stdout.includes('--json')) {
         throw new Error('help output missing expected usage text')
       }
     },
@@ -91,39 +95,43 @@ const offlineCases: CommandCase[] = [
 
 const onlineCases: CommandCase[] = [
   {
-    name: 'A-share quote JSON',
+    name: 'A-share quote YAML',
     args: ['a', 'sh600519'],
     expectExitCode: 0,
     validate: ({ stdout }) => {
-      const data = JSON.parse(stdout)
+      const data = parseStructuredOutput(stdout, 'yaml')
       if (!Array.isArray(data) || data.length === 0) {
-        throw new Error('expected a non-empty JSON array for A-share quotes')
+        throw new Error('expected a non-empty YAML array for A-share quotes')
       }
     },
   },
   {
-    name: 'search JSON',
-    args: ['search', 'maotai'],
+    name: 'search JSON fallback',
+    args: ['search', 'maotai', '--json'],
     expectExitCode: 0,
     validate: ({ stdout }) => {
-      const data = JSON.parse(stdout)
+      const data = parseStructuredOutput(stdout, 'json')
       if (!Array.isArray(data)) {
         throw new Error('expected a JSON array for search results')
       }
     },
   },
   {
-    name: 'kline indicators JSON',
+    name: 'kline indicators YAML',
     args: ['kline-indicators', 'sz000001', '--start', '20240101', '--end', '20240131', '--ma'],
     expectExitCode: 0,
     validate: ({ stdout }) => {
-      const data = JSON.parse(stdout)
+      const data = parseStructuredOutput(stdout, 'yaml')
       if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object' || data[0] === null) {
-        throw new Error('expected a non-empty JSON array for kline indicators')
+        throw new Error('expected a non-empty YAML array for kline indicators')
       }
     },
   },
 ]
+
+function parseStructuredOutput(stdout: string, format: StructuredOutputFormat): unknown {
+  return format === 'json' ? JSON.parse(stdout) : parseYaml(stdout)
+}
 
 async function runCommand(command: string[], timeoutMs = 30000): Promise<CommandResult> {
   const [file, ...args] = command
@@ -203,7 +211,7 @@ async function measureHotAverage(binaryPath: string): Promise<number> {
     if (result.exitCode !== 0) {
       throw new Error(`hot-start sample failed with exit=${result.exitCode}`)
     }
-    JSON.parse(result.stdout)
+    parseStructuredOutput(result.stdout, 'yaml')
     samples.push(result.durationMs)
   }
 
@@ -221,7 +229,7 @@ async function measureStability(binaryPath: string): Promise<number> {
     }
 
     try {
-      const data = JSON.parse(result.stdout)
+      const data = parseStructuredOutput(result.stdout, 'yaml')
       if (!Array.isArray(data) || data.length === 0) {
         failures += 1
       }
@@ -283,7 +291,7 @@ function buildMarkdown(reports: RouteReport[]): string {
     })
     .join('\n')
 
-  return `# Packaging Benchmark\n\n## Summary\n\n| Route | Binary Size | Cold Start | Hot Start Avg | Stability Failures |\n| --- | --- | --- | --- | --- |\n${summaryRows}\n\n## Recommendation\n\n${recommend(reports)}\n\n## Test Set\n\n- 离线冒烟：help 输出、无效 A 股代码校验、kline-indicators 缺少指标校验\n- 在线验收：A 股行情、search、kline-indicators\n- 稳定性：连续 5 次执行 a sh600519，统计失败数\n\n## Details\n\n${details}`
+  return `# Packaging Benchmark\n\n## Summary\n\n| Route | Binary Size | Cold Start | Hot Start Avg | Stability Failures |\n| --- | --- | --- | --- | --- |\n${summaryRows}\n\n## Recommendation\n\n${recommend(reports)}\n\n## Test Set\n\n- 离线冒烟：help 输出、无效 A 股代码校验、kline-indicators 缺少指标校验\n- 在线验收：默认 YAML 的 A 股行情与 kline-indicators，以及显式 JSON 的 search 回退路径\n- 稳定性：连续 5 次执行 a sh600519，统计失败数\n\n## Details\n\n${details}`
 }
 
 async function buildRoute(route: BuildRoute): Promise<RouteReport> {
@@ -299,7 +307,7 @@ async function buildRoute(route: BuildRoute): Promise<RouteReport> {
   if (coldStart.exitCode !== 0) {
     throw new Error(`${route.name} cold start failed: ${coldStart.stderr || coldStart.stdout}`)
   }
-  JSON.parse(coldStart.stdout)
+  parseStructuredOutput(coldStart.stdout, 'yaml')
 
   const onlineChecks = await Promise.all(onlineCases.map((testCase) => runCase(route.binaryPath, testCase)))
   const hotStartAverageMs = await measureHotAverage(route.binaryPath)

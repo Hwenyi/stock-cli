@@ -23,7 +23,8 @@
     "release:dry-run": "semantic-release --dry-run"
   },
   "dependencies": {
-    "stock-sdk": "^1.7.0"
+    "stock-sdk": "^1.7.0",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",

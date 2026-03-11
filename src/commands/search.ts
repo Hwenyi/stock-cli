@@ -1,6 +1,6 @@
 import type { StockSDK } from 'stock-sdk'
 
-import { printJson } from '../output/format'
+import { printOutput } from '../output/format'
 import type { CommandContext } from '../types'
 
 function normalizeKeyword(operands: string[]): string {
@@ -17,6 +17,5 @@ export async function runSearchCommand(sdk: StockSDK, operands: string[], contex
   const keyword = normalizeKeyword(operands)
   const results = await sdk.search(keyword)
 
-  void context
-  printJson(results)
+  printOutput(results, context.options.outputFormat)
 }

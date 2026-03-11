@@ -1,6 +1,6 @@
 import type { StockSDK } from 'stock-sdk'
 
-import { printJson } from '../output/format'
+import { printOutput } from '../output/format'
 
 import type { CommandContext, KlineIndicatorsCommandOptions } from '../types'
 
@@ -44,6 +44,5 @@ export async function runKlineIndicatorsCommand(
     indicators: options.indicators,
   })
 
-  void context
-  printJson(result)
+  printOutput(result, context.options.outputFormat)
 }

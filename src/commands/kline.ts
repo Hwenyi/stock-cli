@@ -1,6 +1,6 @@
 import type { StockSDK } from 'stock-sdk'
 
-import { printJson } from '../output/format'
+import { printOutput } from '../output/format'
 
 import type { CommandContext, KlineCommandOptions, KlineMarket } from '../types'
 import { ensureDateOrder, normalizeAHistorySymbol, normalizeHKHistorySymbol, normalizeMarket, normalizeUSHistorySymbol } from './kline-utils'
@@ -21,19 +21,16 @@ export async function runKlineCommand(
 
   if (market === 'a') {
     const result = await sdk.getHistoryKline(normalizeAHistorySymbol(symbol), options)
-    void context
-    printJson(result)
+    printOutput(result, context.options.outputFormat)
     return
   }
 
   if (market === 'hk') {
     const result = await sdk.getHKHistoryKline(normalizeHKHistorySymbol(symbol), options)
-    void context
-    printJson(result)
+    printOutput(result, context.options.outputFormat)
     return
   }
 
   const result = await sdk.getUSHistoryKline(normalizeUSHistorySymbol(symbol), options)
-  void context
-  printJson(result)
+  printOutput(result, context.options.outputFormat)
 }

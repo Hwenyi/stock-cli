@@ -1,6 +1,6 @@
 import type { StockSDK } from 'stock-sdk'
 
-import { printJson } from '../output/format'
+import { printOutput } from '../output/format'
 import type { CommandContext } from '../types'
 
 function normalizeAShareCodes(operands: string[]): string[] {
@@ -19,6 +19,5 @@ export async function runAShareCommand(sdk: StockSDK, operands: string[], contex
   const normalizedCodes = normalizeAShareCodes(operands)
   const quotes = await sdk.getSimpleQuotes(normalizedCodes)
 
-  void context
-  printJson(quotes)
+  printOutput(quotes, context.options.outputFormat)
 }

@@ -1,6 +1,6 @@
 import type { StockSDK } from 'stock-sdk'
 
-import { printJson } from '../output/format'
+import { printOutput } from '../output/format'
 import type { CommandContext } from '../types'
 
 function normalizeFundCodes(operands: string[]): string[] {
@@ -19,6 +19,5 @@ export async function runFundCommand(sdk: StockSDK, operands: string[], context:
   const normalizedCodes = normalizeFundCodes(operands)
   const quotes = await sdk.getFundQuotes(normalizedCodes)
 
-  void context
-  printJson(quotes)
+  printOutput(quotes, context.options.outputFormat)
 }

@@ -1,6 +1,6 @@
 import type { StockSDK } from 'stock-sdk'
 
-import { printJson } from '../output/format'
+import { printOutput } from '../output/format'
 import type { CommandContext } from '../types'
 
 function normalizeUSCodes(codes: string[]): string[] {
@@ -18,6 +18,5 @@ export async function runUSCommand(sdk: StockSDK, operands: string[], context: C
   const normalizedCodes = normalizeUSCodes(operands)
   const quotes = await sdk.getUSQuotes(normalizedCodes)
 
-  void context
-  printJson(quotes)
+  printOutput(quotes, context.options.outputFormat)
 }

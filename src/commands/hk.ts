@@ -1,6 +1,6 @@
 import type { StockSDK } from 'stock-sdk'
 
-import { printJson } from '../output/format'
+import { printOutput } from '../output/format'
 import type { CommandContext } from '../types'
 
 function normalizeHKCodes(codes: string[]): string[] {
@@ -18,6 +18,5 @@ export async function runHKCommand(sdk: StockSDK, operands: string[], context: C
   const normalizedCodes = normalizeHKCodes(operands)
   const quotes = await sdk.getHKQuotes(normalizedCodes)
 
-  void context
-  printJson(quotes)
+  printOutput(quotes, context.options.outputFormat)
 }

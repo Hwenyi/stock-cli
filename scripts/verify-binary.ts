@@ -13,7 +13,7 @@ const cases: CommandCase[] = [
     args: ['help'],
     expectedExitCode: 0,
     validate: (stdout) => {
-      if (!stdout.includes('stock-cli') || !stdout.includes('Usage:')) {
+      if (!stdout.includes('stock-cli') || !stdout.includes('Usage:') || !stdout.includes('--yaml') || !stdout.includes('--json')) {
         throw new Error('help output missing expected text')
       }
     },

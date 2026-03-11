@@ -1,9 +1,12 @@
 import type { ATROptions, BIASOptions, BOLLOptions, CCIOptions, IndicatorOptions, KDJOptions, MACDOptions, MAOptions, RSIOptions, WROptions } from 'stock-sdk'
 
+export type OutputFormat = 'yaml' | 'json'
+
 export interface GlobalOptions {
   timeout: number
   rps: number
   debug: boolean
+  outputFormat: OutputFormat
 }
 
 export interface CommandContext {

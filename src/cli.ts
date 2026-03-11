@@ -39,6 +39,7 @@ const DEFAULT_OPTIONS: GlobalOptions = {
   timeout: 10000,
   rps: 4,
   debug: false,
+  outputFormat: 'yaml',
 }
 
 function isCommandName(value: string): value is CommandName {
@@ -62,6 +63,8 @@ Commands:
   kline-indicators  Get kline data with indicators in one request
 
 Global Options:
+  --yaml          Output YAML. This is the default.
+  --json          Output pretty JSON for scripts or compatibility.
   --timeout <ms>  Request timeout in milliseconds, default 10000
   --rps <n>       Requests per second limit, default 4
   --debug         Print full error stack
@@ -102,16 +105,18 @@ Kline-indicators Options:
 
 Examples:
   stock-cli a sh600519 sz000858
+  stock-cli a sh600519 --json
   stock-cli fund 000001 110011
   stock-cli hk 700 09988
   stock-cli us AAPL TSLA
-  stock-cli search maotai
-  stock-cli kline a sh600519 --period weekly --start 20240101 --end 20241231
-  stock-cli kline-indicators sz000001 --start 20240101 --end 20241231 --ma --macd
+  stock-cli search maotai --yaml
+  stock-cli kline a sh600519 --period weekly --start 20240101 --end 20241231 --yaml
+  stock-cli kline-indicators sz000001 --start 20240101 --end 20241231 --ma --macd --json
   stock-cli help kline
 
 Notes:
-  Output is always JSON.
+  Output defaults to YAML.
+  If both --yaml and --json are present, --yaml wins.
   Run stock-cli help <command> for detailed command usage.
 `
 }
@@ -125,7 +130,7 @@ Purpose:
   Get A-share or index quote snapshots through stock-sdk.getSimpleQuotes.
 
 Usage:
-  stock-cli a <codes...> [--timeout <ms>] [--rps <n>] [--debug]
+  stock-cli a <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 
 Required Arguments:
   <codes...>  One or more A-share or index codes.
@@ -136,10 +141,10 @@ Code Format:
 
 Examples:
   stock-cli a sh600519
-  stock-cli a sh000001 sz399001
+  stock-cli a sh000001 sz399001 --json
 
 Output:
-  JSON array of SimpleQuote objects.
+  YAML by default, or a JSON array of SimpleQuote objects with --json.
 `
     case 'fund':
       return `stock-cli fund
@@ -148,7 +153,7 @@ Purpose:
   Get fund NAV quotes through stock-sdk.getFundQuotes.
 
 Usage:
-  stock-cli fund <codes...> [--timeout <ms>] [--rps <n>] [--debug]
+  stock-cli fund <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 
 Required Arguments:
   <codes...>  One or more public fund codes.
@@ -159,10 +164,10 @@ Code Format:
 
 Examples:
   stock-cli fund 000001
-  stock-cli fund 000001 110011
+  stock-cli fund 000001 110011 --json
 
 Output:
-  JSON array of FundQuote objects.
+  YAML by default, or a JSON array of FundQuote objects with --json.
 
 Notes:
   Exchange-traded ETFs are better queried with the a command.
@@ -174,7 +179,7 @@ Purpose:
   Get Hong Kong stock quotes through stock-sdk.getHKQuotes.
 
 Usage:
-  stock-cli hk <codes...> [--timeout <ms>] [--rps <n>] [--debug]
+  stock-cli hk <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 
 Required Arguments:
   <codes...>  One or more Hong Kong stock codes.
@@ -185,10 +190,10 @@ Code Format:
 
 Examples:
   stock-cli hk 700
-  stock-cli hk 00700 09988
+  stock-cli hk 00700 09988 --json
 
 Output:
-  JSON array of HKQuote objects.
+  YAML by default, or a JSON array of HKQuote objects with --json.
 `
     case 'us':
       return `stock-cli us
@@ -197,7 +202,7 @@ Purpose:
   Get US stock quotes through stock-sdk.getUSQuotes.
 
 Usage:
-  stock-cli us <codes...> [--timeout <ms>] [--rps <n>] [--debug]
+  stock-cli us <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 
 Required Arguments:
   <codes...>  One or more US tickers.
@@ -208,13 +213,13 @@ Code Format:
 
 Examples:
   stock-cli us AAPL
-  stock-cli us AAPL MSFT TSLA
+  stock-cli us AAPL MSFT TSLA --json
 
 Output:
-  JSON array of USQuote objects.
+  YAML by default, or a JSON array of USQuote objects with --json.
 
 Notes:
-  The quote API may return market-suffixed codes such as AAPL.OQ in the JSON response.
+  The quote API may return market-suffixed codes such as AAPL.OQ in the response.
 `
     case 'search':
       return `stock-cli search
@@ -223,7 +228,7 @@ Purpose:
   Search stocks by code, company name or pinyin through stock-sdk.search.
 
 Usage:
-  stock-cli search <keyword...> [--timeout <ms>] [--rps <n>] [--debug]
+  stock-cli search <keyword...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 
 Required Arguments:
   <keyword...>  One or more words that will be joined into a single search keyword.
@@ -237,10 +242,10 @@ Keyword Examples:
 Examples:
   stock-cli search maotai
   stock-cli search 腾讯
-  stock-cli search 贵州 茅台
+  stock-cli search 贵州 茅台 --json
 
 Output:
-  JSON array of SearchResult objects.
+  YAML by default, or a JSON array of SearchResult objects with --json.
 `
     case 'kline':
       return `stock-cli kline
@@ -249,7 +254,7 @@ Purpose:
   Get historical kline data through stock-sdk.getHistoryKline, getHKHistoryKline or getUSHistoryKline.
 
 Usage:
-  stock-cli kline <market> <symbol> [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--timeout <ms>] [--rps <n>] [--debug]
+  stock-cli kline <market> <symbol> [--yaml|--json] [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--timeout <ms>] [--rps <n>] [--debug]
 
 Required Arguments:
   <market>  One of: a, hk, us
@@ -267,12 +272,12 @@ Options:
   --end     End date in YYYYMMDD.
 
 Examples:
-  stock-cli kline a sh600519 --period weekly --adjust qfq --start 20240101 --end 20241231
-  stock-cli kline hk 700 --period monthly --adjust none
-  stock-cli kline us 105.AAPL --period monthly
+  stock-cli kline a sh600519 --period weekly --adjust qfq --start 20240101 --end 20241231 --yaml
+  stock-cli kline hk 700 --period monthly --adjust none --yaml
+  stock-cli kline us 105.AAPL --period monthly --json
 
 Output:
-  JSON array of HistoryKline or HKUSHistoryKline objects.
+  YAML by default, or a JSON array of HistoryKline or HKUSHistoryKline objects with --json.
 
 Notes:
   Kline command expects exactly 2 operands: <market> <symbol>.
@@ -284,7 +289,7 @@ Purpose:
   Get historical kline data with indicators in one request through stock-sdk.getKlineWithIndicators.
 
 Usage:
-  stock-cli kline-indicators <symbol> [--market <a|hk|us>] [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--ma] [--ma-periods <p1,p2,...>] [--ma-type <sma|ema|wma>] [--macd] [--macd-short <n>] [--macd-long <n>] [--macd-signal <n>] [--boll] [--boll-period <n>] [--boll-stddev <n>] [--kdj] [--kdj-period <n>] [--kdj-k <n>] [--kdj-d <n>] [--rsi] [--rsi-periods <p1,p2,...>] [--wr] [--wr-periods <p1,p2,...>] [--bias] [--bias-periods <p1,p2,...>] [--cci] [--cci-period <n>] [--atr] [--atr-period <n>] [--timeout <ms>] [--rps <n>] [--debug]
+  stock-cli kline-indicators <symbol> [--market <a|hk|us>] [--yaml|--json] [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--ma] [--ma-periods <p1,p2,...>] [--ma-type <sma|ema|wma>] [--macd] [--macd-short <n>] [--macd-long <n>] [--macd-signal <n>] [--boll] [--boll-period <n>] [--boll-stddev <n>] [--kdj] [--kdj-period <n>] [--kdj-k <n>] [--kdj-d <n>] [--rsi] [--rsi-periods <p1,p2,...>] [--wr] [--wr-periods <p1,p2,...>] [--bias] [--bias-periods <p1,p2,...>] [--cci] [--cci-period <n>] [--atr] [--atr-period <n>] [--timeout <ms>] [--rps <n>] [--debug]
 
 Required Arguments:
   <symbol>  Symbol for A-share, HK or US markets.
@@ -298,13 +303,13 @@ Indicator Switches:
   --ma --macd --boll --kdj --rsi --wr --bias --cci --atr
 
 Examples:
-  stock-cli kline-indicators sz000001 --start 20240101 --end 20241231 --ma --macd
-  stock-cli kline-indicators sh600519 --period weekly --ma --ma-periods 5,10,20,60 --ma-type ema --rsi --rsi-periods 6,12
-  stock-cli kline-indicators 00700 --boll --boll-period 20 --boll-stddev 2 --kdj
-  stock-cli kline-indicators 105.MSFT --market us --macd --macd-short 12 --macd-long 26 --macd-signal 9 --atr --atr-period 14
+  stock-cli kline-indicators sz000001 --start 20240101 --end 20241231 --ma --macd --yaml
+  stock-cli kline-indicators sh600519 --period weekly --ma --ma-periods 5,10,20,60 --ma-type ema --rsi --rsi-periods 6,12 --yaml
+  stock-cli kline-indicators 00700 --boll --boll-period 20 --boll-stddev 2 --kdj --yaml
+  stock-cli kline-indicators 105.MSFT --market us --macd --macd-short 12 --macd-long 26 --macd-signal 9 --atr --atr-period 14 --json
 
 Output:
-  JSON array of KlineWithIndicators objects.
+  YAML by default, or a JSON array of KlineWithIndicators objects with --json.
 
 Notes:
   At least one indicator switch or indicator parameter is required.
@@ -465,6 +470,7 @@ function parseArgs(args: string[]): ParsedArgs {
   const klineOptions: KlineCommandOptions = {}
   const klineIndicatorsOptions: KlineIndicatorsCommandOptions = { indicators: {} }
   let command: CommandName | null = null
+  let hasExplicitYaml = false
   const operands: string[] = []
 
   if (args[0] === 'help') {
@@ -498,6 +504,19 @@ function parseArgs(args: string[]): ParsedArgs {
 
       if (arg === '--debug') {
         options.debug = true
+        continue
+      }
+
+      if (arg === '--yaml') {
+        options.outputFormat = 'yaml'
+        hasExplicitYaml = true
+        continue
+      }
+
+      if (arg === '--json') {
+        if (!hasExplicitYaml) {
+          options.outputFormat = 'json'
+        }
         continue
       }
 
