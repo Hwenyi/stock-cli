@@ -17,12 +17,32 @@
 
 统一约定：
 
-- 所有命令输出统一为 JSON
+- 所有命令默认输出 YAML
+- 支持 `--yaml` 与 `--json` 两种显式输出开关；默认优先视为 `--yaml`
+- 保留 `--json` 作为兼容旧脚本和严格机器解析的次选格式
+- 默认优先 YAML 的原因是：在常见 LLM / Agent 消费场景下，YAML 通常比格式化 JSON 更省 token
+- 本文档先同步需求约定，代码行为会在后续迭代跟进；在实现完成前，若文档与当前可执行行为不一致，以实际实现为准
 - 全局可选参数为 `--timeout`、`--rps`、`--debug`
 - 全局帮助可通过 `stock-cli help` 或 `stock-cli --help` 查看
 - 单个命令帮助可通过 `stock-cli help <command>` 或 `stock-cli <command> --help` 查看
 - `kline` 与 `kline-indicators` 都属于 K 线数据命令，但职责不同：前者只返回原始 K 线，后者返回附带技术指标字段的 K 线
 - 后续如果扩展独立指标命令，语义会与 `kline-indicators` 区分开：独立指标命令只负责单指标结果，`kline-indicators` 负责“一次请求同时取 K 线和多个指标”
+
+输出格式参数：
+
+`--yaml`
+
+- 含义：显式指定输出为 YAML
+- 是否必填：否
+- 默认策略：是。未传格式参数时按 YAML 处理
+- 建议场景：给 LLM、Agent、人工阅读、日志粘贴或 token 敏感链路消费
+
+`--json`
+
+- 含义：显式指定输出为 JSON
+- 是否必填：否
+- 默认策略：否。仅在需要稳定 JSON 结构时使用
+- 建议场景：脚本解析、已有 JSON 管道、需要与旧调用方兼容
 
 ## 全局参数
 
@@ -53,7 +73,7 @@
 用法：
 
 ```bash
-stock-cli a <codes...> [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli a <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 ```
 
 必填参数：
@@ -70,11 +90,13 @@ stock-cli a <codes...> [--timeout <ms>] [--rps <n>] [--debug]
 示例：
 
 ```bash
-stock-cli a sh600519
-stock-cli a sh000001 sz399001
+stock-cli a sh600519 --yaml
+stock-cli a sh000001 sz399001 --json
 ```
 
 输出：`SimpleQuote[]`
+
+默认输出格式：YAML
 
 ## fund 命令
 
@@ -83,7 +105,7 @@ stock-cli a sh000001 sz399001
 用法：
 
 ```bash
-stock-cli fund <codes...> [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli fund <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 ```
 
 必填参数：
@@ -98,11 +120,13 @@ stock-cli fund <codes...> [--timeout <ms>] [--rps <n>] [--debug]
 示例：
 
 ```bash
-stock-cli fund 000001
-stock-cli fund 000001 110011
+stock-cli fund 000001 --yaml
+stock-cli fund 000001 110011 --json
 ```
 
 输出：`FundQuote[]`
+
+默认输出格式：YAML
 
 注意：
 
@@ -116,7 +140,7 @@ stock-cli fund 000001 110011
 用法：
 
 ```bash
-stock-cli hk <codes...> [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli hk <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 ```
 
 必填参数：
@@ -132,11 +156,13 @@ stock-cli hk <codes...> [--timeout <ms>] [--rps <n>] [--debug]
 示例：
 
 ```bash
-stock-cli hk 700
-stock-cli hk 00700 09988
+stock-cli hk 700 --yaml
+stock-cli hk 00700 09988 --json
 ```
 
 输出：`HKQuote[]`
+
+默认输出格式：YAML
 
 ## us 命令
 
@@ -145,7 +171,7 @@ stock-cli hk 00700 09988
 用法：
 
 ```bash
-stock-cli us <codes...> [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli us <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 ```
 
 必填参数：
@@ -161,11 +187,13 @@ stock-cli us <codes...> [--timeout <ms>] [--rps <n>] [--debug]
 示例：
 
 ```bash
-stock-cli us AAPL
-stock-cli us AAPL MSFT TSLA
+stock-cli us AAPL --yaml
+stock-cli us AAPL MSFT TSLA --json
 ```
 
 输出：`USQuote[]`
+
+默认输出格式：YAML
 
 注意：
 
@@ -178,7 +206,7 @@ stock-cli us AAPL MSFT TSLA
 用法：
 
 ```bash
-stock-cli search <keyword...> [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli search <keyword...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
 ```
 
 必填参数：
@@ -193,13 +221,15 @@ stock-cli search <keyword...> [--timeout <ms>] [--rps <n>] [--debug]
 示例：
 
 ```bash
-stock-cli search maotai
-stock-cli search 腾讯
-stock-cli search 贵州 茅台
-stock-cli search 00700
+stock-cli search maotai --yaml
+stock-cli search 腾讯 --yaml
+stock-cli search 贵州 茅台 --json
+stock-cli search 00700 --yaml
 ```
 
 输出：`SearchResult[]`
+
+默认输出格式：YAML
 
 ## kline 命令
 
@@ -208,7 +238,7 @@ stock-cli search 00700
 用法：
 
 ```bash
-stock-cli kline <market> <symbol> [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli kline <market> <symbol> [--yaml|--json] [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--timeout <ms>] [--rps <n>] [--debug]
 ```
 
 必填参数：
@@ -238,15 +268,17 @@ stock-cli kline <market> <symbol> [--period <daily|weekly|monthly>] [--adjust <q
 示例：
 
 ```bash
-stock-cli kline a sh600519 --period weekly --adjust qfq --start 20240101 --end 20241231
-stock-cli kline hk 700 --period monthly --adjust none
-stock-cli kline us 105.AAPL --period monthly
+stock-cli kline a sh600519 --yaml --period weekly --adjust qfq --start 20240101 --end 20241231
+stock-cli kline hk 700 --yaml --period monthly --adjust none
+stock-cli kline us 105.AAPL --json --period monthly
 ```
 
 输出：
 
 - A 股返回 `HistoryKline[]`
 - 港股和美股返回 `HKUSHistoryKline[]`
+
+默认输出格式：YAML
 
 ## kline-indicators 命令
 
@@ -257,7 +289,7 @@ stock-cli kline us 105.AAPL --period monthly
 用法：
 
 ```bash
-stock-cli kline-indicators <symbol> [--market <a|hk|us>] [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--ma] [--ma-periods <p1,p2,...>] [--ma-type <sma|ema|wma>] [--macd] [--macd-short <n>] [--macd-long <n>] [--macd-signal <n>] [--boll] [--boll-period <n>] [--boll-stddev <n>] [--kdj] [--kdj-period <n>] [--kdj-k <n>] [--kdj-d <n>] [--rsi] [--rsi-periods <p1,p2,...>] [--wr] [--wr-periods <p1,p2,...>] [--bias] [--bias-periods <p1,p2,...>] [--cci] [--cci-period <n>] [--atr] [--atr-period <n>] [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli kline-indicators <symbol> [--market <a|hk|us>] [--yaml|--json] [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--ma] [--ma-periods <p1,p2,...>] [--ma-type <sma|ema|wma>] [--macd] [--macd-short <n>] [--macd-long <n>] [--macd-signal <n>] [--boll] [--boll-period <n>] [--boll-stddev <n>] [--kdj] [--kdj-period <n>] [--kdj-k <n>] [--kdj-d <n>] [--rsi] [--rsi-periods <p1,p2,...>] [--wr] [--wr-periods <p1,p2,...>] [--bias] [--bias-periods <p1,p2,...>] [--cci] [--cci-period <n>] [--atr] [--atr-period <n>] [--timeout <ms>] [--rps <n>] [--debug]
 ```
 
 必填参数：
@@ -313,16 +345,18 @@ stock-cli kline-indicators <symbol> [--market <a|hk|us>] [--period <daily|weekly
 示例：
 
 ```bash
-stock-cli kline-indicators sz000001 --start 20240101 --end 20241231 --ma --macd
-stock-cli kline-indicators sh600519 --period weekly --ma --ma-periods 5,10,20,60 --ma-type ema --rsi --rsi-periods 6,12
-stock-cli kline-indicators 00700 --boll --boll-period 20 --boll-stddev 2 --kdj
-stock-cli kline-indicators 105.MSFT --market us --macd --macd-short 12 --macd-long 26 --macd-signal 9 --atr --atr-period 14
+stock-cli kline-indicators sz000001 --yaml --start 20240101 --end 20241231 --ma --macd
+stock-cli kline-indicators sh600519 --yaml --period weekly --ma --ma-periods 5,10,20,60 --ma-type ema --rsi --rsi-periods 6,12
+stock-cli kline-indicators 00700 --yaml --boll --boll-period 20 --boll-stddev 2 --kdj
+stock-cli kline-indicators 105.MSFT --market us --json --macd --macd-short 12 --macd-long 26 --macd-signal 9 --atr --atr-period 14
 ```
 
 输出：
 
 - 返回带指标字段的 K 线数组
 - 每条 K 线除基础 OHLCV 字段外，还会按所选指标附加 `ma`、`macd`、`boll`、`kdj`、`rsi`、`wr`、`bias`、`cci`、`atr` 等字段
+
+默认输出格式：YAML
 
 说明：
 

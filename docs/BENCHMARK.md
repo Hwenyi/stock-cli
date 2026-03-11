@@ -1,5 +1,7 @@
 # Packaging Benchmark
 
+> 说明：本页性能数据采集于输出格式切换需求之前，当时在线验收使用的是 JSON 输出路径。2026-03-11 起，文档层面的最新约定已调整为默认 YAML、保留 JSON 为次选；等代码完成后，需要补跑一次基于 YAML 默认输出的基准测试。
+
 ## Summary
 
 | Route | Binary Size | Cold Start | Hot Start Avg | Stability Failures |
@@ -29,9 +31,9 @@ Binary: dist/bin/stock-cli
 - PASS missing indicator selection: exit=1, 557 ms
 
 在线测试
-- PASS A-share quote JSON: exit=0, 134 ms
-- PASS search JSON: exit=0, 154 ms
-- PASS kline indicators JSON: exit=0, 374 ms
+- PASS A-share quote JSON baseline: exit=0, 134 ms
+- PASS search JSON baseline: exit=0, 154 ms
+- PASS kline indicators JSON baseline: exit=0, 374 ms
 
 ## tsdown-bun
 
@@ -43,6 +45,6 @@ Binary: dist/tsdown/stock-cli-tsdown
 - PASS missing indicator selection: exit=1, 973 ms
 
 在线测试
-- PASS A-share quote JSON: exit=0, 179 ms
-- PASS search JSON: exit=0, 150 ms
-- PASS kline indicators JSON: exit=0, 391 ms
+- PASS A-share quote JSON baseline: exit=0, 179 ms
+- PASS search JSON baseline: exit=0, 150 ms
+- PASS kline indicators JSON baseline: exit=0, 391 ms

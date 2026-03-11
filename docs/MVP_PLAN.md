@@ -2,6 +2,7 @@
 
 > 日期：2026-03-09
 > 目标：基于 `stock-sdk` 封装一个可在 Apple Silicon（M4 / macOS arm64）直接执行的 CLI，以 Bun 作为默认打包方案，并保留 tsdown 作为备选路径。
+> 2026-03-11 需求补充：输出格式调整为默认 YAML，`--yaml` 为显式优先选项，`--json` 保留为兼容性次选；本轮先更新文档，不调整实现代码。
 
 ## 1) MVP 目标（只做必要功能）
 
@@ -44,38 +45,38 @@
 
 1. `stock-cli a <codes...>`
 - 示例：`stock-cli a sh600519 sz000858`
-- 输出：统一为 JSON（默认且唯一输出格式）
+- 输出：默认 YAML，也可显式指定 `--json`
 - SDK：`getSimpleQuotes`
 
 2. `stock-cli fund <codes...>`
 - 示例：`stock-cli fund 000001 110011`
-- 输出：统一为 JSON（默认且唯一输出格式）
+- 输出：默认 YAML，也可显式指定 `--json`
 - SDK：`getFundQuotes`
 
 3. `stock-cli hk <codes...>`
 - 示例：`stock-cli hk 00700 09988`
-- 输出：统一为 JSON（默认且唯一输出格式）
+- 输出：默认 YAML，也可显式指定 `--json`
 - SDK：`getHKQuotes`
 
 4. `stock-cli us <codes...>`
 - 示例：`stock-cli us AAPL MSFT`
-- 输出：统一为 JSON（默认且唯一输出格式）
+- 输出：默认 YAML，也可显式指定 `--json`
 - SDK：`getUSQuotes`
 
 5. `stock-cli search <keyword>`
 - 示例：`stock-cli search 茅台`
-- 输出 JSON 数组
+- 输出默认为 YAML 数组，也支持显式 JSON
 - SDK：`search`
 
 6. `stock-cli kline <market> <symbol>`
 - 示例：`stock-cli kline a sh600519 --period weekly --adjust qfq --start 20240101 --end 20241231`
-- 输出 JSON 数组
+- 输出默认为 YAML 数组，也支持显式 JSON
 - `market` 支持 `a` / `hk` / `us`
 - SDK：按市场分别调用 `getHistoryKline` / `getHKHistoryKline` / `getUSHistoryKline`
 
 7. `stock-cli kline-indicators <symbol>`
 - 示例：`stock-cli kline-indicators sz000001 --start 20240101 --end 20241231 --ma --ma-periods 5,10,20,60 --macd --rsi --rsi-periods 6,12`
-- 输出：带技术指标字段的 K 线 JSON 数组
+- 输出：带技术指标字段的 K 线 YAML 数组，必要时可切换为 JSON
 - SDK：`getKlineWithIndicators`
 - 定位：这是“拉 K 线并自动计算指标”的聚合型命令，不替代未来单独的 MA、MACD、BOLL 等指标命令
 
@@ -85,9 +86,16 @@
 - 后续独立指标命令：例如 `indicator-ma`、`indicator-macd` 或 `indicator <name>`，聚焦单指标序列或单指标计算参数，不与 `kline-indicators` 混用
 
 通用参数：
+- `--yaml`：显式输出 YAML，且作为默认偏好格式
+- `--json`：显式输出 JSON，保留给兼容旧脚本和严格机器解析场景
 - `--timeout`：覆盖默认超时
 - `--rps`：限流请求速率（默认 4）
 - `--debug`：打印错误堆栈
+
+输出格式策略：
+- 默认输出格式为 YAML
+- 默认优先 `--yaml`，因为 YAML 在常见 LLM / Agent 消费场景下通常比格式化 JSON 更省 token
+- JSON 不删除，但降级为次选格式
 
 K 线参数：
 - `--period`：`daily|weekly|monthly`，默认 `daily`
@@ -130,7 +138,7 @@ src/
     kline.ts
     kline-indicators.ts
   output/
-    json.ts         # 统一 JSON 输出
+    format.ts       # 统一 YAML / JSON 输出分发
 ```
 
 ### 参数解析建议
@@ -188,7 +196,7 @@ src/
 ### 里程碑 M1（功能通）
 - 完成 `a/fund/hk/us/search/kline/kline-indicators`
 - 本地 `bun run` 可执行
-- JSON 输出为默认且唯一格式
+- YAML 输出为默认格式，JSON 保留为显式次选
 
 ### 里程碑 M2（双二进制）
 - 产出 `stock-cli`、`stock-cli-tsdown`
@@ -211,7 +219,8 @@ src/
 - [ ] `search` 命令可用
 - [ ] `kline` 命令可用
 - [ ] `kline-indicators` 命令可用
-- [ ] CLI 默认输出 JSON
+- [ ] CLI 默认输出 YAML
+- [ ] CLI 支持 `--yaml` 与 `--json`
 - [ ] 有 `BENCHMARK.md` 对比数据
 - [ ] README 有安装与使用说明
 

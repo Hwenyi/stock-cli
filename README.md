@@ -1,6 +1,13 @@
 # stock-cli
 
-`stock-sdk` 的最小 CLI 封装，当前提供七个命令：A 股行情、基金行情、港股行情、美股行情、股票搜索、历史 K 线，以及带技术指标的 K 线聚合查询。CLI 统一输出 JSON，后续新功能也遵循同一输出约定。
+`stock-sdk` 的最小 CLI 封装，当前提供七个命令：A 股行情、基金行情、港股行情、美股行情、股票搜索、历史 K 线，以及带技术指标的 K 线聚合查询。输出格式的新约定已经调整为默认 YAML、保留 JSON 为显式次选；本轮先完成文档同步，代码实现将在后续迭代跟进。
+
+输出格式约定：
+
+- 默认输出格式为 YAML
+- 显式指定时优先使用 `--yaml`
+- `--json` 保留，用于严格机器解析、兼容旧脚本或需要稳定 JSON 结构的场景
+- 之所以默认优先 YAML，是因为在常见 LLM / Agent 消费场景下，YAML 通常比格式化 JSON 更省 token
 
 详细使用细则见 [docs/CLI_USAGE.md](docs/CLI_USAGE.md)。完整文档索引见 [docs/README.md](docs/README.md)。
 
@@ -25,13 +32,13 @@ bun run src/cli.ts kline-indicators sz000001 --start 20240101 --end 20241231 --m
 ## 命令
 
 ```bash
-stock-cli a <codes...> [--timeout <ms>] [--rps <n>] [--debug]
-stock-cli fund <codes...> [--timeout <ms>] [--rps <n>] [--debug]
-stock-cli hk <codes...> [--timeout <ms>] [--rps <n>] [--debug]
-stock-cli us <codes...> [--timeout <ms>] [--rps <n>] [--debug]
-stock-cli search <keyword...> [--timeout <ms>] [--rps <n>] [--debug]
-stock-cli kline <market> <symbol> [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--timeout <ms>] [--rps <n>] [--debug]
-stock-cli kline-indicators <symbol> [--market <a|hk|us>] [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--ma] [--macd] [--boll] [--kdj] [--rsi] [--wr] [--bias] [--cci] [--atr] [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli a <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli fund <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli hk <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli us <codes...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli search <keyword...> [--yaml|--json] [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli kline <market> <symbol> [--yaml|--json] [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--timeout <ms>] [--rps <n>] [--debug]
+stock-cli kline-indicators <symbol> [--market <a|hk|us>] [--yaml|--json] [--period <daily|weekly|monthly>] [--adjust <qfq|hfq|none>] [--start <YYYYMMDD>] [--end <YYYYMMDD>] [--ma] [--macd] [--boll] [--kdj] [--rsi] [--wr] [--bias] [--cci] [--atr] [--timeout <ms>] [--rps <n>] [--debug]
 stock-cli help [command]
 ```
 
@@ -43,8 +50,8 @@ bun run src/cli.ts fund 000001
 bun run src/cli.ts hk 700
 bun run src/cli.ts us AAPL TSLA
 bun run src/cli.ts search 腾讯
-bun run src/cli.ts kline hk 00700 --period daily --adjust none
-bun run src/cli.ts kline-indicators sh600519 --period weekly --ma --ma-periods 5,10,20,60 --rsi --rsi-periods 6,12
+bun run src/cli.ts kline hk 00700 --yaml --period daily --adjust none
+bun run src/cli.ts kline-indicators sh600519 --json --period weekly --ma --ma-periods 5,10,20,60 --rsi --rsi-periods 6,12
 bun run src/cli.ts help kline
 ```
 
@@ -63,9 +70,9 @@ bun run build:bun:windows-x64
 ./dist/bin/stock-cli fund 000001
 ./dist/bin/stock-cli hk 00700
 ./dist/bin/stock-cli us AAPL
-./dist/bin/stock-cli search maotai
-./dist/bin/stock-cli kline a sh600519 --period monthly
-./dist/bin/stock-cli kline-indicators sz000001 --ma --macd --start 20240101 --end 20241231
+./dist/bin/stock-cli search maotai --yaml
+./dist/bin/stock-cli kline a sh600519 --period monthly --yaml
+./dist/bin/stock-cli kline-indicators sz000001 --json --ma --macd --start 20240101 --end 20241231
 ```
 
 发布构建默认覆盖两个平台：
@@ -86,9 +93,9 @@ bun run build:tsdown
 ./dist/tsdown/stock-cli-tsdown fund 110011
 ./dist/tsdown/stock-cli-tsdown hk 00700
 ./dist/tsdown/stock-cli-tsdown us AAPL
-./dist/tsdown/stock-cli-tsdown search 00700
-./dist/tsdown/stock-cli-tsdown kline us 105.AAPL --period weekly --adjust qfq
-./dist/tsdown/stock-cli-tsdown kline-indicators 105.MSFT --market us --boll --rsi
+./dist/tsdown/stock-cli-tsdown search 00700 --yaml
+./dist/tsdown/stock-cli-tsdown kline us 105.AAPL --json --period weekly --adjust qfq
+./dist/tsdown/stock-cli-tsdown kline-indicators 105.MSFT --market us --yaml --boll --rsi
 ```
 
 ## 说明
@@ -105,7 +112,9 @@ bun run build:tsdown
 - 场内 ETF 更适合使用 `a` 命令查询，`fund` 命令面向公募基金净值
 - 搜索命令直接透传关键字给 `stock-sdk.search`，支持代码、名称和拼音缩写
 - `help` 支持总览和命令级帮助，例如 `stock-cli help`、`stock-cli help us`、`stock-cli kline --help`
-- 所有命令统一输出 JSON，适合脚本集成和后续功能扩展
+- 所有命令默认输出 YAML；如需显式声明，优先使用 `--yaml`
+- `--json` 继续保留，作为兼容旧脚本和严格机器解析时的次选输出格式
+- 当前这轮为“文档先行”同步，代码尚未切换到默认 YAML 前，实际行为以实现状态为准
 - 默认打包命令是 `bun run build`，等价于 `bun run build:bun`
 - 默认 Bun 本地产物命名为 `dist/bin/stock-cli`，Windows 本地产物命名为 `dist/bin/stock-cli.exe`
 - `bun run build:tsdown` 保留为备选构建路径，不进入默认发布流程，也不进入 CI/CD
