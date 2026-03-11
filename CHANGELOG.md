@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/Hwenyi/stock-cli/compare/v1.0.1...v1.1.0) (2026-03-11)
+
+### Features
+
+* default cli output to yaml ([d208e2e](https://github.com/Hwenyi/stock-cli/commit/d208e2e6e2a4dd00fd5b19198e9c273ff4d8d258))
+
 ## Unreleased
 
 - docs: 将 CLI 输出格式需求更新为默认 YAML，保留 `--json` 为显式次选
